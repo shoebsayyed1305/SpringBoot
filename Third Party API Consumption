@@ -1,0 +1,126 @@
+Steps -->
+1. Create Cofiguration class in cofiguation package like below
+
+        package com.example.demo.config;
+        
+        import org.springframework.context.annotation.Bean;
+        import org.springframework.context.annotation.Configuration;
+        import org.springframework.web.client.RestTemplate;
+        
+        @Configuration
+        public class Config {
+        
+        	@Bean
+        	public RestTemplate restTemplate() {
+        		return new RestTemplate();
+        	}
+        }
+
+
+2. Create Service class in service package like below
+
+          package com.example.demo.service;
+          
+          import org.springframework.beans.factory.annotation.Autowired;
+          import org.springframework.web.client.RestTemplate;
+
+          @org.springframework.stereotype.Service
+          public class Service {
+          
+          	@Autowired
+          	private RestTemplate restTemplate;
+          	
+          	public String consumeAPI() {
+          		return restTemplate.getForObject("https://dummyjson.com/products/1", String.class);      //  Enter Third Party API's URL here
+          	}
+          }
+
+
+3.Create Controller class in controller package like below
+
+          
+          package com.example.demo.controller;
+          
+          import org.springframework.beans.factory.annotation.Autowired;
+          import org.springframework.web.bind.annotation.GetMapping;
+          import org.springframework.web.bind.annotation.RestController;
+          
+          import com.example.demo.service.Service;
+
+          @RestController
+          public class Controller {
+          
+          	@Autowired
+          	private Service service;
+          	
+          	@GetMapping("/getData")
+          	public String getData() {
+          		return service.consumeAPI();
+          	}
+          }
+
+
+
+
+Above controller will return response as String if we want response as a JSON object then 
+4. create data Object class to map required attributes like below 
+
+          package com.example.demo.dataObject;
+          import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+          
+          @JsonIgnoreProperties(ignoreUnknown = true) // If we want to ignore some attributes
+          public class DataObject {
+          
+          	private int id;
+          	private String title;
+          	private String description;
+          	public int getId() {
+          		return id;
+          	}
+          	public void setId(int id) {
+          		this.id = id;
+          	}
+          	public String getTitle() {
+          		return title;
+          	}
+          	public void setTitle(String title) {
+          		this.title = title;
+          	}
+          	public String getDescription() {
+          		return description;
+          	}
+          	public void setDescription(String description) {
+          		this.description = description;
+          	}
+          }
+
+
+then change return type of method and controller in Service class and controller like below
+
+        public DataObject consumeAPI() {
+      		return restTemplate.getForObject("https://dummyjson.com/products/1", DataObject.class);
+      	}
+
+            Change above method to below method in service class 
+
+      	public String consumeAPI() {
+      		return restTemplate.getForObject("https://dummyjson.com/products/1", String.class);
+        }
+
+
+
+
+      @GetMapping("/getData")
+    	public ResponseEntity<DataObject> getData() {
+    		return new ResponseEntity<>(service.consumeAPI(),HttpStatus.OK);
+    	}
+
+            Change above method to below method in Controller
+
+    	@GetMapping("/getData")
+    	public String getData() {
+    		return service.consumeAPI();
+    	}
+
+
+
